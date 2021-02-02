@@ -15,13 +15,16 @@ class TableViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        getTasks()
+    }
+    
+    func getTasks() {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let context = appDelegate.persistentContainer.viewContext
-        
+
         let request: NSFetchRequest<Entity> = Entity.fetchRequest()
 
         do {
@@ -32,13 +35,15 @@ class TableViewController: UITableViewController {
     }
 
     @IBAction func addTask(_ sender: UIBarButtonItem) {
+        createAllert()
+    }
+    
+    func createAllert() {
         let alertController = UIAlertController(title: "Add Task", message: "Add new task", preferredStyle: .alert)
         let alertAction = UIAlertAction(title: "Ok", style: .default) { (alertAction) in
-            let textField = alertController.textFields![0]
+            guard let textField = alertController.textFields?[0] else { return }
             guard let text = textField.text else { return }
-            
             self.saveTask(task: text)
-            
             self.tableView.reloadData()
         }
         
@@ -51,13 +56,13 @@ class TableViewController: UITableViewController {
     }
     
     func saveTask(task: String) {
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let context = appDelegate.persistentContainer.viewContext
-        let entity = NSEntityDescription.entity(forEntityName: "Entity", in: context)
-        let taskObject = NSManagedObject(entity: entity!, insertInto: context) as! Entity
-        
+        guard let entity = NSEntityDescription.entity(forEntityName: "Entity", in: context) else { return }
+        guard let taskObject = NSManagedObject(entity: entity, insertInto: context) as? Entity else { return }
+
         taskObject.taskToDo = task
-        
+
         do {
             try context.save()
             arrayTasks.append(taskObject)
@@ -67,13 +72,7 @@ class TableViewController: UITableViewController {
     }
     // MARK: - Table view data source
 
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
-        return 1
-    }
-
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
         return arrayTasks.count
     }
 
@@ -94,7 +93,7 @@ class TableViewController: UITableViewController {
         if editingStyle == .delete {
             let taskToDelete = arrayTasks[indexPath.row]
     
-            let appDelegate = UIApplication.shared.delegate as! AppDelegate
+            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
             let context = appDelegate.persistentContainer.viewContext
             
             context.delete(taskToDelete)
@@ -108,31 +107,5 @@ class TableViewController: UITableViewController {
             }
         }
     }
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
 
